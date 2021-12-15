@@ -1,4 +1,4 @@
-package http
+package template
 
 var https = `
 var T {{}}

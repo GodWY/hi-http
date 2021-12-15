@@ -1,4 +1,4 @@
-module github.com/GodWY/hi-http
+module github.com/GodWY/hip
 
 go 1.13
 
