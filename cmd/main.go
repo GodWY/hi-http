@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/GodWY/hi-http/internal/http"
+	"github.com/GodWY/hip/internal/http"
 
 	"github.com/gin-gonic/gin"
 )
