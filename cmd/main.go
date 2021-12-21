@@ -1,35 +1,30 @@
 package main
 
 import (
-	"github.com/GodWY/hip/internal/http"
-
+	"github.com/GodWY/hip"
+	"github.com/GodWY/hip/app"
+	"github.com/GodWY/hip/greeter"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	cc := http.Builder().WithPort(7070)
-	srv := http.NewHttp(cc)
-	rg := srv.Router("api")
-	RegisterPbHttpHandler(rg, &HelloWorld{})
-
-	rg1 := srv.Router("api/v1")
-	RegisterPbHttpHandler(rg1, &HelloWorld{})
-	srv.Run()
+	hip := hip.NewService(app.Builder().WithPort(7070).WithService("test"))
+	greeter.RegisterGreeterHttpHandler(hip, &HelloWorld{})
+	hip.Run()
 }
 
 type HelloWorld struct {
 }
 
-func (h *HelloWorld) HandleAck(ctx *gin.Context, req *TemplateReq) (rsp *TemplateRsp, err error) {
-	rsp = &TemplateRsp{
-		Name: "greet",
+func (hl *HelloWorld) Hello(ctx *gin.Context, in *greeter.Request) (out *greeter.Response, err error) {
+	out = &greeter.Response{
+		Msg: "success",
 	}
 	return
 }
-
-func (h *HelloWorld) HandleAck1(ctx *gin.Context, req *TemplateReq) (rsp *TemplateRsp, err error) {
-	rsp = &TemplateRsp{
-		Name: "greet1",
+func (hl *HelloWorld) Stream(ctx *gin.Context, in *greeter.Request) (out *greeter.Response, err error) {
+	out = &greeter.Response{
+		Msg: "success",
 	}
 	return
 }

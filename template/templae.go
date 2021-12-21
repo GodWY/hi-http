@@ -1,5 +1,8 @@
 package template
 
+var html = `
+package {{.package}}
+
 import (
 	"net/http"
 
@@ -7,39 +10,42 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var ts AckHttpService
+var ts {{.service}}
 
-type TemplateReq struct {
-}
 
-type TemplateRsp struct {
-}
-
-type AckHttpService interface {
-	HandleAck(ctx *gin.Context, in *TemplateReq) (out *TemplateRsp, err error)
+type {{.service}} interface {
+{{- range $key, $value := .Topic }}
+	{{$value}}
+{{- end}}
 }
 
 type AckService interface {
-	HandleAck(ctx *gin.Context)
+{{- range $key, $value := .Topic }}
+	{{$value}}
+{{- end}}
 }
 
 // RegisterHandler 注册服务
 func registerHttpHandler(srv service.Service, srvs AckService) {
 	// 注册服务组
 	group := srv.Router("ack")
-	group.GET("/", srvs.HandleAck)
+	{{- range $key, $value := .Topic }}
+	group.Any($key,$value)
+	{{- end}}
 }
 
-type Template struct{}
+type hip struct{}
 
 // RegisterPbHttpHandler 注册pb服务
-func RegisterPbHttpHandler(srv service.Service, srvs AckHttpService) {
-	tmp := new(Template)
+func RegisterPbHttpHandler(srv service.Service, srvs {{.service}}) {
+	hi := new(hip)
 	ts = srvs
-	registerHttpHandler(srv, tmp)
+	registerHttpHandler(srv, ts)
 }
 
-func (t *Template) HandleAck(ctx *gin.Context) {
+
+{{- range $key, $value := .Topic }}
+func (h *hip) Handle{{.h}}(ctx *gin.Context) {
 	req := &TemplateReq{}
 	if ok := ctx.Bind(req); ok != nil {
 		ctx.JSON(http.StatusOK, "bind error")
@@ -52,3 +58,5 @@ func (t *Template) HandleAck(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, rsp)
 }
+{{- end}}
+`
