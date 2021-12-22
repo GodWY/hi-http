@@ -1,30 +1,30 @@
 package main
 
 import (
+	"errors"
+
 	"github.com/GodWY/hip"
 	"github.com/GodWY/hip/app"
-	"github.com/GodWY/hip/greeter"
+	"github.com/GodWY/hip/proto/greeters"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	hip := hip.NewService(app.Builder().WithPort(7070).WithService("test"))
-	greeter.RegisterGreeterHttpHandler(hip, &HelloWorld{})
+	greeters.RegisterGreeterHttpHandler(hip, &HelloWorld{})
 	hip.Run()
 }
 
 type HelloWorld struct {
 }
 
-func (hl *HelloWorld) Hello(ctx *gin.Context, in *greeter.Request) (out *greeter.Response, err error) {
-	out = &greeter.Response{
+func (hw *HelloWorld) SayHello(ctx *gin.Context, in *greeters.SayHelloRequest) (out *greeters.SayHelloResponse, err error) {
+	out = &greeters.SayHelloResponse{
 		Msg: "success",
 	}
 	return
 }
-func (hl *HelloWorld) Stream(ctx *gin.Context, in *greeter.Request) (out *greeter.Response, err error) {
-	out = &greeter.Response{
-		Msg: "success",
-	}
+func (hw *HelloWorld) AskHello(ctx *gin.Context, in *greeters.AskHelloRequest) (out *greeters.AskHelloResponse, err error) {
+	err = errors.New("sssss")
 	return
 }

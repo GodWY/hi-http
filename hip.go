@@ -5,6 +5,7 @@ import (
 	"github.com/GodWY/hip/service"
 )
 
+// NewService 创建一个gin服务
 func NewService(cc *app.Options) service.Service {
 	return app.NewHttp(cc)
 }

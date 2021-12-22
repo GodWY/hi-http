@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -49,6 +50,7 @@ func (app *Service) Run() {
 		app.engine = gin.Default()
 	}
 	port := ":" + strconv.Itoa(app.Port)
+	fmt.Println("[hip] running port :", port)
 	app.engine.Run(port)
 
 	// 使用http包监控端口.当失去连接时，平滑关闭

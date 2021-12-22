@@ -1,11 +1,14 @@
 package app
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 type Options struct {
 	Port       int
 	Service    string
 	MiddleWare []gin.HandlerFunc
+	Debug      bool
 }
 
 func Builder() *Options {
@@ -29,5 +32,11 @@ func (o *Options) WithMiddleWare(middleWare ...gin.HandlerFunc) *Options {
 	newMiddWare := make([]gin.HandlerFunc, 0, len(middleWare))
 	copy(newMiddWare, middleWare)
 	o.MiddleWare = middleWare
+	return o
+}
+
+// WithMiddleWare
+func (o *Options) WithDebug(debug bool) *Options {
+	o.Debug = debug
 	return o
 }

@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package greeters;
+
+option go_package="./greeters";
+
+
+
+message SayHelloRequest{
+  string  Msg = 1;
+}
+
+message  SayHelloResponse{
+  string Msg = 2;
+}
+
+message AskHelloRequest{
+  string  Msg = 1;
+}
+
+message AskHelloResponse{
+  string  Msg = 1;
+}
+
+
+service Greeter {
+    // @GET
+    rpc SayHello (SayHelloRequest) returns (SayHelloResponse);
+    // @POST
+    rpc AskHello(AskHelloRequest) returns (AskHelloResponse);
+}
