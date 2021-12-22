@@ -7,5 +7,5 @@ import (
 
 // NewService 创建一个gin服务
 func NewService(cc *app.Options) service.Service {
-	return app.NewHttp(cc)
+	return app.NewHTTP(cc)
 }

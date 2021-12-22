@@ -2,9 +2,10 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"strconv"
 	"time"
 
@@ -12,50 +13,65 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Service hip默认服务
 type Service struct {
-	Name   string
-	Port   int
+	Name   string // service name
+	Port   int    // service port
 	engine *gin.Engine
 	groups map[string]*gin.RouterGroup
 	srv    *http.Server
 }
 
-// NewHttp 创建http
-func NewHttp(cc *Options) service.Service {
-	app := &Service{}
+// NewHTTP 创建http
+func NewHTTP(cc *Options) service.Service {
+	app := new(Service)
 	engine := gin.Default()
 	app.groups = make(map[string]*gin.RouterGroup)
 	app.engine = engine
 	app.Name = cc.Service
 	app.Port = cc.Port
+	if !cc.Debug {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	return app
 }
 
 // Router 创建router
-func (app *Service) Router(groupId string, rg ...gin.HandlerFunc) *gin.RouterGroup {
+func (app *Service) Router(groupID string, rg ...gin.HandlerFunc) *gin.RouterGroup {
 	if app.engine == nil {
 		panic("please provide a engine")
 	}
 	if app.groups == nil {
 		panic("please provide a group")
 	}
-	group := app.engine.Group(groupId, rg...)
-	app.groups[groupId] = group
+	group := app.engine.Group(groupID, rg...)
+	app.groups[groupID] = group
+	return group
+}
+
+// RegisterGroup 注册服务组id
+func (app *Service) RegisterGroup(groupID string, handle service.HandlerHipFunc) *gin.RouterGroup {
+	if app.engine == nil {
+		panic("please provide a engine")
+	}
+	if app.groups == nil {
+		panic("please provide a group")
+	}
+	group := app.engine.Group(groupID, gin.HandlerFunc(handle))
+	app.groups[groupID] = group
 	return group
 }
 
 // Run 运行服务
 func (app *Service) Run() {
 	if app.engine == nil {
-		app.engine = gin.Default()
+		panic("please create new Service")
 	}
 	port := ":" + strconv.Itoa(app.Port)
-	fmt.Println("[hip] running port :", port)
 	app.engine.Run(port)
-
 	// 使用http包监控端口.当失去连接时，平滑关闭
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    port,
 		Handler: app.engine,
 	}
 	app.srv = srv
@@ -67,23 +83,22 @@ func (app *Service) Run() {
 	}()
 }
 
-func (app *Service) GetEngine() *gin.Engine {
-	return app.engine
-}
-
-func (app *Service) GetRouterGroup(groupId string) *gin.RouterGroup {
-	if _, ok := app.groups[groupId]; !ok {
-		panic("group is not found")
+// GetRouterGroup 通过组id获取实例
+func (app *Service) GetRouterGroup(groupID string) *gin.RouterGroup {
+	if _, ok := app.groups[groupID]; !ok {
 		return nil
 	}
-	return app.groups[groupId]
+	return app.groups[groupID]
 }
 
 // Close 关闭gin服务
-func (app *Service) Close(cloSig chan bool) {
-
+func (app *Service) Close() {
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	log.Println("Shutdown Server ...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if app.srv == nil {
@@ -93,16 +108,11 @@ func (app *Service) Close(cloSig chan bool) {
 	if err := app.srv.Shutdown(ctx); err != nil {
 		log.Fatal("Server Shutdown:", err)
 	}
-	// catching ctx.Done(). timeout of 5 seconds.
-	select {
-	case <-ctx.Done():
-		log.Println("timeout of 5 seconds.")
-	}
 	log.Println("Server exiting")
 }
 
-// RegisterHttpHandler 注册http服务
-func (app *Service) RegisterHttpHandler(group *gin.RouterGroup, topic string, handle *service.HandlerFunc) {
+// RegisterHTTPHandler 注册http服务
+func (app *Service) RegisterHTTPHandler(group *gin.RouterGroup, topic string, handle *service.HandlerFunc) {
 	if handle == nil {
 		panic("is error")
 	}
@@ -116,7 +126,7 @@ func (app *Service) RegisterHttpHandler(group *gin.RouterGroup, topic string, ha
 	}
 }
 
-// RegisterPbHttpHandler 注册pb服务
-func (app *Service) RegisterPbHttpHandler(group *gin.RouterGroup, topic string, handle *service.HandlerFunc) {
+// RegisterPbHTTPHandler 注册pb服务
+func (app *Service) RegisterPbHTTPHandler(group *gin.RouterGroup, topic string, handle *service.HandlerFunc) {
 	return
 }

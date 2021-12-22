@@ -9,12 +9,15 @@ type HandlerFunc struct {
 	Method string
 }
 
+// HandlerFunc defines the handler used by gin middleware as return value.
+type HandlerHipFunc gin.HandlerFunc
+
 type Service interface {
 	Run()
 	Router(group string, rg ...gin.HandlerFunc) *gin.RouterGroup
-	GetEngine() *gin.Engine
 	GetRouterGroup(groupId string) *gin.RouterGroup
-	RegisterHttpHandler(group *gin.RouterGroup, topic string, handle *HandlerFunc)
-	Close(cloSig chan bool)
-	RegisterPbHttpHandler(group *gin.RouterGroup, topic string, handle *HandlerFunc)
+	RegisterHTTPHandler(group *gin.RouterGroup, topic string, handle *HandlerFunc)
+	Close()
+	RegisterPbHTTPHandler(group *gin.RouterGroup, topic string, handle *HandlerFunc)
+	RegisterGroup(groupId string, handle HandlerHipFunc) *gin.RouterGroup
 }
