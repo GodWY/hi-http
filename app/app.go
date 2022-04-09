@@ -4,8 +4,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
 	"strconv"
 	"time"
 
@@ -15,11 +13,12 @@ import (
 
 // Service hip默认服务
 type Service struct {
-	Name   string // service name
-	Port   int    // service port
-	engine *gin.Engine
-	groups map[string]*gin.RouterGroup
-	srv    *http.Server
+	Name        string // service name
+	Port        int    // service port
+	engine      *gin.Engine
+	groups      map[string]*gin.RouterGroup
+	srv         *http.Server
+	middlewares gin.HandlersChain
 }
 
 // NewHTTP 创建http
@@ -30,8 +29,12 @@ func NewHTTP(cc *Options) service.Service {
 	app.engine = engine
 	app.Name = cc.Service
 	app.Port = cc.Port
+	app.middlewares = cc.MiddleWare
 	if !cc.Debug {
 		gin.SetMode(gin.ReleaseMode)
+	}
+	if len(cc.MiddleWare) > 0 {
+		app.engine.Use(cc.MiddleWare...)
 	}
 	return app
 }
@@ -95,9 +98,9 @@ func (app *Service) GetRouterGroup(groupID string) *gin.RouterGroup {
 func (app *Service) Close() {
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
-	quit := make(chan os.Signal)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
+	// quit := make(chan os.Signal)
+	// signal.Notify(quit, os.Interrupt)
+	// <-quit
 	log.Println("Shutdown Server ...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

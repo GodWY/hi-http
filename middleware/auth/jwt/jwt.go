@@ -51,7 +51,6 @@ type options struct {
 // WithSigningMethod with signing method option.
 func WithSigningMethod(method jwt.SigningMethod) Option {
 	return func(o *options) {
-		o.signingMethod = method
 	}
 }
 

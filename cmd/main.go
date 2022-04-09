@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"net/http"
 
 	"github.com/GodWY/hip"
 	"github.com/GodWY/hip/app"
@@ -13,6 +14,7 @@ func main() {
 	hip := hip.NewService(app.Builder().WithPort(7070).WithService("test"))
 	greeters.RegisterGreeterHttpHandler(hip, &HelloWorld{})
 	hip.Run()
+	http.Get("")
 }
 
 type HelloWorld struct {
