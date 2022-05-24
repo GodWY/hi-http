@@ -1,23 +1,16 @@
 package service
 
 import (
-	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
-type HandlerFunc struct {
-	Hf     gin.HandlerFunc
-	Method string
+type ServerInfo struct {
+	// ServiceName 服务名称
+	ServiceName string
 }
-
-// HandlerFunc defines the handler used by gin middleware as return value.
-type HandlerHipFunc gin.HandlerFunc
-
 type Service interface {
-	Run()
-	Router(group string, rg ...gin.HandlerFunc) *gin.RouterGroup
-	GetRouterGroup(groupId string) *gin.RouterGroup
-	RegisterHTTPHandler(group *gin.RouterGroup, topic string, handle *HandlerFunc)
-	Close()
-	RegisterPbHTTPHandler(group *gin.RouterGroup, topic string, handle *HandlerFunc)
-	RegisterGroup(groupId string, handle HandlerHipFunc) *gin.RouterGroup
+	OnInit()
+	StartUp() error
+	Stop()
+	SetRouter(h http.Handler)
 }
